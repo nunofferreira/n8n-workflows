@@ -1,0 +1,233 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "quote-triage",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "4283fec0-a86d-4ab0-ab91-f5d4894c4acb",
+      "name": "Webhook",
+      "webhookId": "448071f4-0f5a-4bd9-9fe3-703dd56a9f27"
+    },
+    {
+      "parameters": {
+        "url": "https://jsonplaceholder.typicode.com/users/1",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        -64
+      ],
+      "id": "5a634b29-fac1-4ae2-9be3-c8a20a516398",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "216c9395-822c-4f3a-a060-8d82b11b48c1",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "data = _items[0]['json']\nwebhook_body = data.get('body', {})\n\nqty = int(webhook_body.get('qty', 0))\nnotes = str(webhook_body.get('notes', '')).lower()\nis_expedited = 'urgent' in notes or qty >= 50\n\nreturn [{\n    'json': {\n        'customer_id': webhook_body.get('customer_id'),\n        'account_name': data.get('company', {}).get('name', 'Unknown'),\n        'contact_email': data.get('email'),\n        'sku': webhook_body.get('sku'),\n        'qty': qty,\n        'priority': 'expedited' if is_expedited else 'standard',\n        'requires_cad': 'cad' in notes\n    }\n}]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        0
+      ],
+      "id": "698b84a9-eed8-4464-b84e-88a5182edf85",
+      "name": "Code in Python"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "9978489b-d822-4fcd-8c01-48176b7121f5",
+              "leftValue": "={{ $json.priority }}",
+              "rightValue": "expedited",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        896,
+        0
+      ],
+      "id": "35649e19-c7be-48e8-8b14-bb09bfefc523",
+      "name": "If"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        -96
+      ],
+      "id": "193f2239-1581-421c-8917-5cc9c18d5ee1",
+      "name": "Expedited SLA Queue"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        96
+      ],
+      "id": "95a9aa5b-7056-44f6-8dab-02ac43935ec8",
+      "name": "Standard Quote Queue"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "localhost:5678",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Microsoft Windows 10.0.26200; pt-PT) PowerShell/7.6.9",
+            "accept-encoding": "gzip, deflate, br",
+            "content-type": "application/json",
+            "content-length": "132"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "customer_id": "DE-4092",
+            "sku": "LX20-LINEAR-GUIDE",
+            "qty": 50,
+            "notes": "Need 3D CAD confirmation and urgent delivery to Munich"
+          },
+          "webhookUrl": "http://localhost:5678/webhook-test/quote-triage",
+          "executionMode": "test"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code in Python",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in Python": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Expedited SLA Queue",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Standard Quote Queue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "vuMjqi51RW20gxOa",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "e727de62-ca09-410e-a633-6c2efdf1fc81",
+  "meta": {
+    "instanceId": "4532501aa128ddee33c470d420afcdc7f4953ba8f5d9fe0e08358b375217ff8e"
+  },
+  "nodeGroups": [],
+  "id": "ECTP6z3UIxnmHyjG",
+  "tags": []
+}

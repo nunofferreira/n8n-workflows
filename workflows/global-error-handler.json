@@ -1,0 +1,30 @@
+{
+  "name": "Global Error Handler",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "912498c1-c064-4a6a-b4c7-e370e534053d",
+      "name": "Global Error Handler"
+    }
+  ],
+  "pinData": {},
+  "connections": {},
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "d40bfef3-2c89-4167-8fe8-1ae15d69bccc",
+  "meta": {
+    "instanceId": "4532501aa128ddee33c470d420afcdc7f4953ba8f5d9fe0e08358b375217ff8e"
+  },
+  "nodeGroups": [],
+  "id": "vuMjqi51RW20gxOa",
+  "tags": []
+}

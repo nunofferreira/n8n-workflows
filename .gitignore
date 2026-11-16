@@ -1,0 +1,9 @@
+# Local secrets
+.env
+
+# n8n runtime artifacts
+*.sqlite
+*.log
+
+# Local tooling
+.codesight/
